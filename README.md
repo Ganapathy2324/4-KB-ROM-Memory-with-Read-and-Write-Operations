@@ -101,5 +101,81 @@ end
 ```
 ## Output
 ![Screenshot 2025-05-03 140242](https://github.com/user-attachments/assets/d6c2d3bc-52b3-4cab-8064-7b05b1da6773)
+
+## 4 KB RAM PROGRAM:
+```
+module ram(
+    input clk,
+    input write_enable,
+    input [11:0] address,    
+    input [7:0] data_in,
+    output reg [7:0] data_out
+);
+reg [7:0] ram_block[0:4095];  
+always @(posedge clk) begin
+    if (write_enable)
+        ram_block[address] <= data_in;
+    else
+        data_out <= ram_block[address];
+end
+endmodule
+```
+## OUTPUT
+![Screenshot 2025-05-25 161358](https://github.com/user-attachments/assets/3089a9a9-c583-47a6-8e14-c433f3e1ee56)
+## 4KB RAM TESTBENCH:
+```
+module ram_tb;
+
+    reg clk;
+    reg write_enable;
+    reg [11:0] address;
+    reg [7:0] data_in;
+    wire [7:0] data_out;
+
+    ram uut (
+        .clk(clk),
+        .write_enable(write_enable),
+        .address(address),
+        .data_in(data_in),
+        .data_out(data_out)
+    );
+
+    initial clk = 0;
+    always #5 clk = ~clk;
+
+    initial begin
+        write_enable = 0;
+        address = 0;
+        data_in = 0;
+
+        #10;
+
+        write_enable = 1;
+
+        address = 12'd0; data_in = 8'hAA; #10;  
+        address = 12'd100; data_in = 8'h55; #10;  
+        address = 12'd4095; data_in = 8'hFF; #10;  
+
+        write_enable = 0;
+
+        address = 12'd0; #10;
+        $display("Read from address 0: %h (expected AA)", data_out);
+
+        address = 12'd100; #10;
+        $display("Read from address 100: %h (expected 55)", data_out);
+
+        address = 12'd4095; #10;
+        $display("Read from address 4095: %h (expected FF)", data_out);
+
+        address = 12'd500; #10;
+        $display("Read from address 500 (unwritten): %h", data_out);
+
+        $finish;
+    end
+endmodule
+```
+## OUTPUT
+![Screenshot 2025-05-25 161548](https://github.com/user-attachments/assets/8f651cc3-ddb8-46e1-95c4-f070d84d7bbd)
+
 ## Conclusion
 In this experiment, a 4KB ROM memory with read and write operations was designed and successfully simulated using Verilog HDL. The testbench verified both the write and read functionalities by simulating the memory operations and observing the output waveforms. The experiment demonstrates how to implement memory operations in Verilog, effectively modeling both the reading and writing processes for ROM.
